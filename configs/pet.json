@@ -1,0 +1,23 @@
+{
+  "model": {
+    "item_dim": 172,
+    "time_dim": 16,
+    "heads": 4,
+    "layers": 2,
+    "cpm_layers": 2,
+    "predictor": "heatmap",
+    "time_bins": 100,
+    "max_days": 365.0,
+    "sigma_days": 14.0,
+    "alpha": 1.0,
+    "beta": 0.001
+  },
+  "training": {
+    "epochs": 100,
+    "batch_size": 200,
+    "max_length": 32,
+    "patience": 20,
+    "seed": 0,
+    "device": "cpu"
+  }
+}

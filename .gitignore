@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Downloaded datasets and experiment artifacts (recreate through the documented commands)
+data/raw/
+data/processed/
+outputs/
+.DS_Store
