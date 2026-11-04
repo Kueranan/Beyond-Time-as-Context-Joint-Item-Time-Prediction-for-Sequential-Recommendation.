@@ -1,0 +1,104 @@
+{
+  "implementation": "author_release_v1",
+  "source_commit": "af804c01186a492050555007916de4f3e68ba5b8",
+  "model": {
+    "item_dim": 172,
+    "time_dim": 100,
+    "heads": 2,
+    "layers": 2,
+    "cpm_heads": 4,
+    "cpm_layers": 2,
+    "dropout": 0.1,
+    "predictor": "heatmap",
+    "time_bins": 52,
+    "max_days": 365.0,
+    "sigma_days": 30.0,
+    "smoothing": 0.1,
+    "alpha": 0.1,
+    "beta": 0.01
+  },
+  "training": {
+    "epochs": 100,
+    "batch_size": 200,
+    "max_length": 32,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "patience": 20,
+    "seed": 0,
+    "device": "mps",
+    "threads": 2,
+    "candidate_count": 100,
+    "max_train_batches": 0,
+    "max_eval_users": 0
+  },
+  "data": {
+    "dataset": "books",
+    "category": "Books",
+    "source": "data/raw/Books.csv.gz",
+    "source_sha256": "752e144c1d3804619711a6b21bd68a5505825064723bfcd5008ac26067abe04b",
+    "rows_scanned": 29139329,
+    "year": 2020,
+    "year_mode": "since",
+    "min_interactions": 15,
+    "max_users": 0,
+    "seed": 0,
+    "cluster_gap_days": 1.0,
+    "retain_training_only": true,
+    "evaluation_users": 26343,
+    "qualified_users_before_cluster_filter": 27109,
+    "users": 27109,
+    "items": 378369,
+    "interactions": 997530,
+    "train_examples": 887508,
+    "validation_targets": 42174,
+    "test_targets": 40739,
+    "held_out_item_not_in_train_fraction": 0.36153558549322784,
+    "catalog_policy": "transductive IDs from all retained splits; no held-out targets in training"
+  },
+  "data_hashes": {
+    "sequences.json": "47e1db20fd98bf4e13b88c14f2c1c7ce1b7637a966a4785f2ff61f88ed748f96",
+    "items.json": "34df91676456ae6ff93cfd0ed7664abf9321a02201dea47c887929210250dae1",
+    "stats.json": "c78d8cbe34a6aa8c2826ee1b69581687ae85daa9d8002e5454a34277f943452f"
+  },
+  "provenance": {
+    "source_commit": "af804c01186a492050555007916de4f3e68ba5b8",
+    "alpha_and_bins": "Figure 8 Heatmap individual sensitivity optima; joint optimum unverified",
+    "sigma_days": "30 days standard deviation from author utils/utils.py, NOT sqrt(Figure 11)",
+    "data_policy": "since start year; keep training-only users; Table I audit required",
+    "known_limitation": "Published inference repeats identical queries against shared candidate memory; candidate times may be identical. See docs/REFERENCE_AUDIT.md"
+  },
+  "software": {
+    "torch": "2.15.0",
+    "numpy": "2.5.4"
+  },
+  "paper_data_audit": {
+    "paper": {
+      "users": 13236,
+      "items": 196868,
+      "interactions": 363143
+    },
+    "actual": {
+      "users": 27109,
+      "items": 378369,
+      "interactions": 997530
+    },
+    "difference": {
+      "users": 13873,
+      "items": 181501,
+      "interactions": 634387
+    },
+    "counts_match": false,
+    "identical_records_and_splits_verified": false,
+    "reason": "Author preprocessing script and processed CSVs are absent from the pinned release"
+  },
+  "implementation_hashes": {
+    "check_parity.py": "d3e662791ec177d5247c1672018116a4b30a4fbb18565e1ae4ab8abd31da9917",
+    "__init__.py": "76c42207468efae297f1351c301614849bc550dd44be9f6c8286725ed8ddbffc",
+    "model.py": "e6b965b87f58f0c6699126b0737c72fd742f6d06098fba3e8e5d8dab33fdf9c1",
+    "loss.py": "d0bd65af79ae5b5e0831e4386c6211d7d7d518ab8a3a790c3c5c47b11bf8f7b5",
+    "audit_data.py": "088c3c06b02a19c224b5f703389cc74e5cbbcecbe85298ae64bd81b903967d3a",
+    "train.py": "bf274edefccd805ed9f2bd3b1cdcd452917198c163a07ccaab78182a40f7a877",
+    "evaluate.py": "785a7afd5282446d85c978e10c3e3363ee9b9d763652b51de86bd44fac92f180",
+    "data.py": "99a9971f7d65ff8dc7148736ec25405bd3350b60785b84bafdfbf13e420387d8"
+  }
+}
