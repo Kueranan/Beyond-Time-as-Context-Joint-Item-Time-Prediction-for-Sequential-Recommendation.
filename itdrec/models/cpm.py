@@ -12,7 +12,7 @@ class CPMLayer(nn.Module):
     def __init__(self, config):
         super().__init__()
         dimension = config.item_dim + 2 * config.time_dim
-        self.attention = nn.MultiheadAttention(dimension, config.heads, dropout=config.dropout,
+        self.attention = nn.MultiheadAttention(dimension, config.cpm_heads or config.heads, dropout=config.dropout,
                                                kdim=config.item_dim, vdim=config.item_dim,
                                                batch_first=True)
         self.norm_attention = nn.LayerNorm(dimension)

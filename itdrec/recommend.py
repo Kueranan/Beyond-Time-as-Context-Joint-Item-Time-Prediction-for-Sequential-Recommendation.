@@ -16,6 +16,22 @@ def recommend(model, items, timestamps, num_items, max_length, top_k=10, chunk_s
         raise ValueError("top_k and chunk_size must be positive")
     model.eval()
     device = next(model.parameters()).device
+    from .reference.model import ReferenceITDRec
+    if isinstance(model, ReferenceITDRec):
+        from .reference.data import history_tensors as reference_history, cluster_relative_days
+        history = reference_history(items, timestamps, cluster_relative_days(timestamps), max_length)
+        batch = {key: value.unsqueeze(0).to(device) for key, value in history.items()}
+        observed = set(items)
+        candidates = [i for i in range(1, num_items + 1) if i not in observed]
+        if not candidates:
+            return []
+        batch["candidates"] = torch.tensor([candidates], device=device)
+        # Keep the whole candidate memory together: chunking changes reference CPM.
+        output = model.predict(batch, compact_query=True)
+        scores, indices = output["scores"][0].topk(min(top_k, len(candidates)))
+        return [{"item_id": candidates[index], "score": score,
+                 "predicted_days": output["predicted_days"][0, index].item()}
+                for score, index in zip(scores.tolist(), indices.tolist())]
     batch = {k: v.unsqueeze(0) for k, v in history_tensors(items, timestamps, max_length).items()}
     batch = move_batch(batch, device)
     last_hidden = model.encode(batch["items"], batch["times"], batch["lengths"])

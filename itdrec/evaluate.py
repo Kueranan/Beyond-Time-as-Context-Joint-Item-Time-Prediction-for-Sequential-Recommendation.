@@ -65,6 +65,9 @@ def evaluate(model, sequences, num_items, device, split="valid", max_length=32,
 
 def load_checkpoint(path, device="cpu", data_dir=None):
     checkpoint = torch.load(path, map_location=device, weights_only=True)
+    if checkpoint.get("implementation") == "author_release_v1":
+        from .reference.train import load_checkpoint as load_reference
+        return load_reference(path, device, data_dir)
     if data_dir is not None:
         for filename, expected in checkpoint["data_hashes"].items():
             if sha256(Path(data_dir) / filename) != expected:
@@ -88,8 +91,14 @@ def main():
     model, checkpoint = load_checkpoint(args.checkpoint, args.device, args.data_dir)
     sequences, stats = load_data(args.data_dir)
     settings = checkpoint["training_config"]
-    result = evaluate(model, sequences, stats["items"], args.device, args.split,
-                      settings["max_length"], settings["candidate_count"], settings["seed"], args.max_users)
+    if checkpoint.get("implementation") == "author_release_v1":
+        from .reference.evaluate import evaluate as evaluate_reference
+        result = evaluate_reference(model, sequences, stats["items"], args.device, args.split,
+                                    settings["max_length"], settings["candidate_count"],
+                                    settings["seed"], args.max_users, settings["batch_size"])
+    else:
+        result = evaluate(model, sequences, stats["items"], args.device, args.split,
+                          settings["max_length"], settings["candidate_count"], settings["seed"], args.max_users)
     print(json.dumps(result, indent=2))
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

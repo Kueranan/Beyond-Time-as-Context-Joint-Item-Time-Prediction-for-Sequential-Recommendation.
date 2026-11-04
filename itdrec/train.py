@@ -1,4 +1,4 @@
-"""Train ITDRec, choose the best validation NDCG@10, then evaluate test once."""
+"""Train the config's versioned ITDRec pipeline; evaluate test after checkpoint selection."""
 
 import argparse
 import json
@@ -108,8 +108,8 @@ def train(data_dir, output_dir, model_config, settings):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-dir", type=Path, default=Path("data/processed/pet"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs/pet_heatmap"))
+    parser.add_argument("--data-dir", type=Path, help="Override data_dir from the config")
+    parser.add_argument("--output-dir", type=Path, help="Override output_dir from the config")
     parser.add_argument("--config", type=Path, default=Path("configs/pet.json"))
     parser.add_argument("--predictor", choices=["regression", "binary", "heatmap"])
     for name in ["epochs", "seed", "batch_size", "max_train_batches", "max_eval_users"]:
@@ -117,6 +117,15 @@ def main():
     parser.add_argument("--device")
     args = parser.parse_args()
     config = json.loads(args.config.read_text())
+    if config.get("implementation") == "author_release_v1":
+        from .reference.train import train_from_config
+        train_from_config(config, args)
+        return
+    if config.get("implementation") not in {None, "legacy"}:
+        raise ValueError(f"Unknown implementation: {config['implementation']}")
+    # CLI overrides config; legacy configs such as smoke.json retain Pet defaults.
+    data_dir = args.data_dir or Path(config.get("data_dir", "data/processed/pet"))
+    output_dir = args.output_dir or Path(config.get("output_dir", "outputs/pet_heatmap"))
     model_values = config.get("model", {})
     settings = dict(TRAIN_DEFAULTS)
     unknown = set(config.get("training", {})) - set(settings)
@@ -129,7 +138,7 @@ def main():
             settings[name] = value
     if args.predictor:
         model_values["predictor"] = args.predictor
-    train(args.data_dir, args.output_dir, ModelConfig(**model_values), settings)
+    train(data_dir, output_dir, ModelConfig(**model_values), settings)
 
 
 if __name__ == "__main__":

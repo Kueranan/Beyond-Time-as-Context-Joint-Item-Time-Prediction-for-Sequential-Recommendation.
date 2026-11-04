@@ -35,7 +35,7 @@ def split_sequence(items, timestamps, gap_days=1.0):
 
 
 def prepare(dataset, source, output, year=None, year_mode="single", min_interactions=None,
-            max_users=0, seed=0, cluster_gap_days=1.0):
+            max_users=0, seed=0, cluster_gap_days=1.0, retain_training_only=False):
     if max_users < 0 or cluster_gap_days <= 0:
         raise ValueError("max_users must be >= 0 and cluster_gap_days must be > 0")
     year = DEFAULTS[dataset][0] if year is None else year
@@ -54,7 +54,9 @@ def prepare(dataset, source, output, year=None, year_mode="single", min_interact
             connection.execute("PRAGMA journal_mode=OFF")
             connection.execute("PRAGMA synchronous=OFF")
             connection.execute("PRAGMA cache_size=-131072")  # 128 MiB bounds random index I/O.
-            connection.execute("CREATE TABLE events (user TEXT, item TEXT, time INTEGER, UNIQUE(user,item,time))")
+            # Bulk ingest first. Maintaining a random-key UNIQUE index for every
+            # raw row is much slower than one disk-backed DISTINCT/sort afterward.
+            connection.execute("CREATE TABLE events (user TEXT, item TEXT, time INTEGER)")
             pending = []
             opener = gzip.open if str(source).endswith(".gz") else open
             with opener(source, "rt", encoding="utf-8", newline="") as stream:
@@ -70,10 +72,14 @@ def prepare(dataset, source, output, year=None, year_mode="single", min_interact
                         continue
                     pending.append((row["user_id"], row["parent_asin"], timestamp))
                     if len(pending) >= 20_000:
-                        connection.executemany("INSERT OR IGNORE INTO events VALUES (?,?,?)", pending)
+                        connection.executemany("INSERT INTO events VALUES (?,?,?)", pending)
                         pending.clear()
-            connection.executemany("INSERT OR IGNORE INTO events VALUES (?,?,?)", pending)
+            connection.executemany("INSERT INTO events VALUES (?,?,?)", pending)
             connection.commit()
+            connection.execute("CREATE TABLE unique_events AS SELECT user,item,time FROM events GROUP BY user,item,time")
+            connection.execute("DROP TABLE events")
+            connection.execute("ALTER TABLE unique_events RENAME TO events")
+            connection.execute("CREATE INDEX events_by_user_time ON events(user,time,item)")
             qualified = [row[0] for row in connection.execute(
                 "SELECT user FROM events GROUP BY user HAVING COUNT(*) >= ?", (minimum,))]
             # Sampling whole users preserves each selected user's complete history.
@@ -89,6 +95,14 @@ def prepare(dataset, source, output, year=None, year_mode="single", min_interact
             def append_user():
                 if previous is not None:
                     sequence = split_sequence(items, timestamps, cluster_gap_days)
+                    if retain_training_only:
+                        starts = cluster_boundaries(timestamps, cluster_gap_days)
+                        # Published DataLoader retains users with fewer than 3 clusters for training.
+                        # Users with a single training event remain in the catalog but have no train pair.
+                        train_end = starts[-2] if len(starts) >= 3 else len(items)
+                        valid_end = starts[-1] if len(starts) >= 3 else len(items)
+                        sequence = {"items": items, "timestamps_ms": timestamps,
+                                    "train_end": train_end, "valid_end": valid_end}
                     if sequence is not None:
                         sequences.append({"user_id": previous, **sequence})
 
@@ -116,13 +130,15 @@ def prepare(dataset, source, output, year=None, year_mode="single", min_interact
         "source_sha256": sha256(source), "rows_scanned": rows_read,
         "year": year, "year_mode": year_mode, "min_interactions": minimum,
         "max_users": max_users, "seed": seed, "cluster_gap_days": cluster_gap_days,
+        "retain_training_only": retain_training_only,
+        "evaluation_users": sum(seq["train_end"] < seq["valid_end"] for seq in sequences),
         "qualified_users_before_cluster_filter": len(qualified),
         "users": len(sequences), "items": len(catalog),
         "interactions": sum(len(seq["items"]) for seq in sequences),
         "train_examples": sum(seq["train_end"] - 1 for seq in sequences),
         "validation_targets": sum(seq["valid_end"] - seq["train_end"] for seq in sequences),
         "test_targets": sum(len(seq["items"]) - seq["valid_end"] for seq in sequences),
-        "held_out_item_not_in_train_fraction": sum(i not in train_items for i in held_out) / len(held_out),
+        "held_out_item_not_in_train_fraction": sum(i not in train_items for i in held_out) / max(1, len(held_out)),
         "catalog_policy": "transductive IDs from all retained splits; no held-out targets in training",
     }
     (output / "sequences.json").write_text(json.dumps(sequences) + "\n")
@@ -143,10 +159,12 @@ def main():
     parser.add_argument("--max-users", type=int, default=0, help="0 = all qualifying users")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--cluster-gap-days", type=float, default=1.0)
+    parser.add_argument("--retain-training-only", action="store_true",
+                        help="Keep users with fewer than three clusters for training, as in the author release")
     args = parser.parse_args()
     prepare(args.dataset, args.input or Path(f"data/raw/{CATEGORIES[args.dataset]}.csv.gz"),
             args.output or Path(f"data/processed/{args.dataset}"), args.year, args.year_mode,
-            args.min_interactions, args.max_users, args.seed, args.cluster_gap_days)
+            args.min_interactions, args.max_users, args.seed, args.cluster_gap_days, args.retain_training_only)
 
 
 if __name__ == "__main__":

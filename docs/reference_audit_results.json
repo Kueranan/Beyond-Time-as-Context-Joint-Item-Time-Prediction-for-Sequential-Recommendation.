@@ -1,0 +1,98 @@
+{
+  "source_commit": "af804c01186a492050555007916de4f3e68ba5b8",
+  "parity_passed": true,
+  "gradients_compared": 69,
+  "max_absolute_error": 5.960464477539063e-08,
+  "pytest": "38 passed",
+  "datasets": {
+    "pet": {
+      "data_dir": "data/processed/pet_reference_since",
+      "paper": {
+        "users": 23904,
+        "items": 126988,
+        "interactions": 344667
+      },
+      "actual": {
+        "users": 31168,
+        "items": 99949,
+        "interactions": 517901
+      },
+      "difference": {
+        "users": 7264,
+        "items": -27039,
+        "interactions": 173234
+      },
+      "counts_match": false,
+      "identical_records_and_splits_verified": false,
+      "reason": "Author preprocessing script and processed CSVs are absent from the pinned release",
+      "training_users": 30678,
+      "evaluation_users": 29385
+    },
+    "books": {
+      "data_dir": "data/processed/books_reference_since",
+      "paper": {
+        "users": 13236,
+        "items": 196868,
+        "interactions": 363143
+      },
+      "actual": {
+        "users": 27109,
+        "items": 378369,
+        "interactions": 997530
+      },
+      "difference": {
+        "users": 13873,
+        "items": 181501,
+        "interactions": 634387
+      },
+      "counts_match": false,
+      "identical_records_and_splits_verified": false,
+      "reason": "Author preprocessing script and processed CSVs are absent from the pinned release",
+      "training_users": 27003,
+      "evaluation_users": 26343
+    },
+    "beauty": {
+      "data_dir": "data/processed/beauty_reference_since",
+      "paper": {
+        "users": 21837,
+        "items": 184362,
+        "interactions": 472091
+      },
+      "actual": {
+        "users": 29083,
+        "items": 195152,
+        "interactions": 1037259
+      },
+      "difference": {
+        "users": 7246,
+        "items": 10790,
+        "interactions": 565168
+      },
+      "counts_match": false,
+      "identical_records_and_splits_verified": false,
+      "reason": "Author preprocessing script and processed CSVs are absent from the pinned release",
+      "training_users": 28860,
+      "evaluation_users": 28032
+    }
+  },
+  "mps_checks": {
+    "pet": {
+      "users_trained": 200,
+      "targets_trained": 2208,
+      "limited_run": true,
+      "constant_time_user_fraction": 1.0
+    },
+    "books": {
+      "users_trained": 200,
+      "targets_trained": 4355,
+      "limited_run": true,
+      "constant_time_user_fraction": 1.0
+    },
+    "beauty": {
+      "users_trained": 200,
+      "targets_trained": 3837,
+      "limited_run": true,
+      "constant_time_user_fraction": 1.0
+    }
+  }
+}

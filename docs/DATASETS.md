@@ -1,5 +1,9 @@
 # ข้อมูลที่ใช้
 
+ตารางและ split ด้านล่างอธิบายชุด **legacy แบบ single-year**
+pipeline ใหม่ใช้ข้อมูล `*_reference_since` สำหรับตรวจเทียบ author release
+ผลเตรียมใหม่ยังไม่ตรง Table I ดูตัวเลขและข้อจำกัดใน [REFERENCE_AUDIT.md](REFERENCE_AUDIT.md)
+
 แหล่งข้อมูลคือ [Amazon Reviews 2023 ของ McAuley Lab](https://amazon-reviews-2023.github.io/)
 ตาม Section V-A ของ paper ที่ผู้ใช้ให้
 

@@ -70,3 +70,20 @@ def test_prepare_real_format_filters_sorts_deduplicates(tmp_path):
     seq = json.loads((tmp_path / "processed/sequences.json").read_text())[0]
     assert seq["timestamps_ms"] == sorted(seq["timestamps_ms"])
     assert (seq["train_end"], seq["valid_end"]) == (2, 3)
+
+
+def test_reference_prepare_keeps_train_only_users_and_since_year_events(tmp_path):
+    start = 1609459200000
+    source = tmp_path / "input.csv"
+    with source.open("w", newline="") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["user_id", "parent_asin", "rating", "timestamp"])
+        writer.writerows(("train_only", str(i), 5, start + i * 1000) for i in range(4))
+        writer.writerows(("eval", str(i), 5, start + day * DAY_MS)
+                         for i, day in enumerate([0, 1, 400, 500]))
+    stats = prepare("pet", source, tmp_path / "out", year_mode="since", min_interactions=4,
+                    retain_training_only=True)
+    assert stats["users"] == 2 and stats["evaluation_users"] == 1
+    seqs = json.loads((tmp_path / "out/sequences.json").read_text())
+    train_only = next(seq for seq in seqs if seq["user_id"] == "train_only")
+    assert train_only["train_end"] == train_only["valid_end"] == 4

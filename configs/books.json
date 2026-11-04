@@ -1,0 +1,42 @@
+{
+  "implementation": "author_release_v1",
+  "data_dir": "data/processed/books_reference_since",
+  "output_dir": "outputs/books_author_release_seed0",
+  "model": {
+    "item_dim": 172,
+    "time_dim": 100,
+    "heads": 2,
+    "layers": 2,
+    "cpm_heads": 4,
+    "cpm_layers": 2,
+    "dropout": 0.1,
+    "predictor": "heatmap",
+    "time_bins": 52,
+    "max_days": 365.0,
+    "sigma_days": 30.0,
+    "smoothing": 0.1,
+    "alpha": 0.1,
+    "beta": 0.01
+  },
+  "training": {
+    "epochs": 100,
+    "batch_size": 200,
+    "max_length": 32,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "patience": 20,
+    "seed": 0,
+    "device": "mps",
+    "threads": 2,
+    "candidate_count": 100,
+    "max_train_batches": 0,
+    "max_eval_users": 0
+  },
+  "provenance": {
+    "source_commit": "af804c01186a492050555007916de4f3e68ba5b8",
+    "alpha_and_bins": "Figure 8 Heatmap individual sensitivity optima; joint optimum unverified",
+    "sigma_days": "30 days standard deviation from author utils/utils.py, NOT sqrt(Figure 11)",
+    "data_policy": "since start year; keep training-only users; Table I audit required",
+    "known_limitation": "Published inference repeats identical queries against shared candidate memory; candidate times may be identical. See docs/REFERENCE_AUDIT.md"
+  }
+}

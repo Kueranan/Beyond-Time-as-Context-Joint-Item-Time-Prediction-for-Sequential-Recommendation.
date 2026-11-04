@@ -1,5 +1,8 @@
 # สมการใน paper อยู่ตรงไหนในโค้ด
 
+เอกสารนี้อธิบาย **legacy implementation** ใน `itdrec/models/`
+pipeline ค่าเริ่มต้นเปลี่ยนเป็น `itdrec/reference/` แล้ว ดู [REFERENCE_AUDIT.md](REFERENCE_AUDIT.md)
+
 อ้างอิง PDF ที่ผู้ใช้ให้และ [โค้ดผู้เขียน](https://github.com/yifeiHuang623/ITDRec)
 ตรวจ source `models/ITDRec.py` เพื่อเทียบรายละเอียด แต่ implementation นี้เขียนใหม่
 ให้ใช้ interface เดียวกันทั้ง training และ inference และแยกส่วนอธิบายได้ง่าย
@@ -59,7 +62,8 @@
    แต่ g(i) ที่อ้างข้ามจาก Binary ครอบคลุมแค่ horizon เดียว
    ที่นี่ใช้ grid `[0,2*max_days)` ตามช่วงที่โค้ดผู้เขียนใช้ decode heatmap
    และใช้ **ตำแหน่ง argmax** ไม่ใช่ค่าความสูงตามถ้อยคำที่อาจอ่านคลาดเคลื่อนใน Eq. (21)
-   Gaussian เป็น density ในพิกัด `time / max_days`, sigma ก็แปลงหน่วยตามกัน
+   config ใหม่ใช้ `heatmap_density_units: days` เป็น Gaussian density ต่อวันตาม Eq. (19)
+   config/checkpoint เก่าที่ไม่มี field นี้ยังใช้ density ในพิกัด `time / max_days`
    output เป็น real-valued heatmap trained with MSE ไม่ใช่ softmax probability mass
    การเปลี่ยนหน่วย density ทำให้สเกล time loss และค่า alpha ต่างจากการใช้ density ในหน่วยวัน
 
@@ -77,8 +81,10 @@
 
 10. **Experimental settings.** `configs/pet.json` ใช้ item embedding 172, sequence 32,
     batch 200, horizon 365 วัน, สูงสุด 100 epochs และ patience 20 ตามค่าที่ paper ระบุ
-    time dimension, layers, dropout, bins, sigma, alpha, beta, learning rate และจำนวน negatives
-    เป็นค่าทดลองที่ตั้งอย่างเปิดเผย ไม่อ้างว่าทุกค่าได้มาจาก paper
+    config ทั้งสาม dataset อัปเดต alpha/bins จาก Figure 8 และ sigma จาก Figure 11
+    ค่าอื่นที่ paper ไม่ระบุใช้ default จาก repository ผู้เขียน ดูแหล่งที่มารายค่าและ
+    ข้อขัดแย้งเรื่อง sigma ใน [PAPER_SETTINGS.md](PAPER_SETTINGS.md)
+    ชุดค่าที่รวมจากหลายกราฟไม่ใช่ joint optimum ที่ยืนยัน และไม่ทำให้ implementation ตรงต้นฉบับทั้งหมด
     ใช้ validation NDCG@10 เลือก checkpoint; paper ไม่ได้ระบุ metric เลือก checkpoint ชัดเจนในข้อความที่อ่าน
     หากจะเทียบผล paper ต้อง tune บน validation และรัน seeds 0–4 แล้วรายงานค่าเฉลี่ย
 

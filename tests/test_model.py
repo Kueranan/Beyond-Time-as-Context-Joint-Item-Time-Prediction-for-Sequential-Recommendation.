@@ -83,3 +83,52 @@ def test_head_targets_and_decoding_match_meaning():
     heatmap = HeatmapHead(4, max_days=10, time_bins=20, sigma_days=1)
     targets = heatmap.targets(torch.tensor([[3.0, 15.0]]))
     assert heatmap.predict_days(targets).tolist() == [[3.0, 15.0]]
+
+
+def test_day_density_matches_gaussian_and_preserves_legacy_units():
+    # Use a horizon other than 365 to catch a hard-coded unit conversion.
+    days = HeatmapHead(4, max_days=10, time_bins=20, sigma_days=2,
+                       heatmap_density_units="days")
+    legacy = HeatmapHead(4, max_days=10, time_bins=20, sigma_days=2)
+    targets = torch.tensor([[3.0, 15.0]])
+    expected = torch.distributions.Normal(targets.unsqueeze(-1), 2.0).log_prob(
+        torch.arange(20, dtype=torch.float32)).exp()
+    assert torch.allclose(days.targets(targets), expected, atol=1e-7)
+    assert torch.allclose(legacy.targets(targets), expected * 10, atol=1e-6)
+    assert torch.equal(days.predict_days(expected), legacy.predict_days(expected))
+
+
+@pytest.mark.parametrize("category", ["pet", "books", "beauty"])
+def test_paper_configs_have_finite_gradients_and_reload(category):
+    import json
+    from dataclasses import asdict
+    from pathlib import Path
+
+    cfg = ModelConfig(**json.loads(Path(f"configs/legacy/{category}.json").read_text())["model"])
+    model, inputs = ITDRec(8, cfg), batch()
+    assert model.encoder is not None
+    assert model.cpm.layers[0].attention.num_heads == 4
+    output = predict_batch(model, inputs)
+    loss, _ = joint_loss(model, output, inputs)
+    loss.backward()
+    assert torch.isfinite(loss)
+    for module in [model.item_embedding, model.encoder, model.cpm, model.time_head]:
+        gradients = [p.grad for p in module.parameters() if p.grad is not None]
+        assert gradients and all(torch.isfinite(g).all() for g in gradients)
+        assert any(g.abs().sum() > 0 for g in gradients)
+    restored = ITDRec(8, ModelConfig(**asdict(cfg)))
+    restored.load_state_dict(model.state_dict())
+    model.eval()
+    restored.eval()
+    assert torch.equal(predict_batch(model, inputs)["scores"], predict_batch(restored, inputs)["scores"])
+
+
+def test_old_checkpoint_configuration_retains_old_behavior():
+    from dataclasses import asdict
+
+    old_config = asdict(config())
+    old_config.pop("heatmap_density_units")
+    old_config.pop("cpm_heads")
+    restored = ITDRec(8, ModelConfig(**old_config))
+    assert restored.time_head.density_scale == 1.0
+    assert restored.cpm.layers[0].attention.num_heads == old_config["heads"]

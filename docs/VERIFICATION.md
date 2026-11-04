@@ -1,5 +1,36 @@
 # ผลตรวจการทำงาน
 
+## Author-release audit — 4 พฤศจิกายน 2026
+
+- `.venv/bin/python -m pytest -q`: **38 tests ผ่าน**
+- เพิ่ม pipeline `itdrec/reference/` และตรึง source commit ใน config/checkpoint
+- Numerical parity กับ source: encoder, logits, time outputs, target, joint loss,
+  gradients 69 tensors และ inference หลังแก้ mask size ผ่าน; max absolute error `5.96e-08`
+- ทดสอบ MPS บนข้อมูล reference ใหม่ครบ 3 หมวดด้วย batch size 200 หมวดละ 1 training batch
+  และ validation/test อย่างละ 3 ผู้ใช้ ฝึก บันทึก โหลด checkpoint กลับ และประเมินสำเร็จ
+  ผลอยู่ `outputs/reference_check_20261104/{pet,books,beauty}` เป็น limited runs ทั้งหมด
+- ทุก smoke run พบ `constant_time_user_fraction = 1.0` ยืนยันข้อจำกัด inference ที่พบใน release
+- CLI evaluate และ recommend ใช้ checkpoint ใหม่ได้; โหลด checkpoint legacy จริงได้ (Pet best epoch 7)
+- ข้อมูลแบบ since เตรียมครบทั้ง 3 ชุดแล้ว แต่จำนวนไม่ตรง Table I; รายงานที่
+  `outputs/reference_audit/datasets.json` ไม่อ้างว่าเป็นข้อมูลต้นฉบับ
+- รายละเอียดสิ่งที่แก้ สิ่งที่คงไว้เพื่อ parity และข้อจำกัดที่ยังเหลืออยู่ใน
+  [REFERENCE_AUDIT.md](REFERENCE_AUDIT.md)
+- ผลด้านล่างเป็นประวัติของ legacy implementation เท่านั้น
+
+## อัปเดต config อ้างอิง paper — 3 พฤศจิกายน 2026
+
+- `.venv/bin/python -m pytest -q`: **26 tests ผ่าน** รวม Gaussian หน่วยวัน,
+  compatibility ของ config เก่า, gradient และ checkpoint reload ของ config ใหม่ทั้งสามหมวด
+- ทดสอบบน GPU MPS ด้วย config ใหม่ทั้ง Pet/Books/Beauty, batch size 200,
+  หมวดละ 1 epoch ที่จำกัดเพียง **1 training batch** และ validation/test อย่างละ 3 ผู้ใช้
+- ทั้งสามรันฝึก บันทึก checkpoint โหลดกลับ และประเมินได้ครบ ไม่พบ non-finite loss
+- บันทึกผลที่ `outputs/config_check_20261103/{pet,books,beauty}` และ `limited_run: true`
+  นี่เป็นการตรวจการทำงานเท่านั้น ยังไม่ได้รันเต็ม 100 epochs ด้วย config ใหม่
+- ค่า/ข้อจำกัดอยู่ใน [PAPER_SETTINGS.md](PAPER_SETTINGS.md)
+  ผลด้านล่างเป็นรันเก่าด้วย config ก่อนปรับ ไม่ใช่ผลของ config ปัจจุบัน
+
+## ผลตรวจเดิม — 30 ตุลาคม 2026
+
 ตรวจเมื่อวันที่ 30 ตุลาคม 2026 บน macOS / Apple Silicon โดยใช้ CPU
 Python 3.13.3, PyTorch 2.15.0, NumPy 2.5.4 และ pytest 9.2.0
 
@@ -67,6 +98,9 @@ checkpoint และรายงานอยู่ใน `outputs/pet_demo_<head
 โดยเฉพาะ Regression/Binary ยังมีความคลาดเคลื่อนเวลาสูง
 
 ## ทดลอง config ขนาดปกติบน Pet ชุดเต็ม
+
+คำสั่งด้านล่างเป็นประวัติการรันในวันที่ 30 ตุลาคม; `configs/pet.json` เปลี่ยนแล้ว
+ให้ดูค่าของรันนั้นใน `outputs/pet_full_heatmap_2epochs/config.json` เมื่อต้องการเปรียบเทียบ
 
 ```bash
 python -m itdrec.train --config configs/pet.json \

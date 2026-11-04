@@ -1,5 +1,9 @@
 # อ่านและอธิบายโค้ด ITDRec ทีละส่วน
 
+เอกสารนี้อธิบาย **legacy implementation** โดยเฉพาะ right padding และ relative time แบบ t−t_latest
+pipeline ใหม่ใน `itdrec/reference/` ใช้ left padding และ between-cluster time ตามโค้ดผู้เขียน
+ดู [REFERENCE_AUDIT.md](REFERENCE_AUDIT.md) สำหรับความต่างและโค้ดปัจจุบัน
+
 ## ปัญหาที่โมเดลตอบ
 
 สมมติผู้ใช้มีประวัติ `[อาหารแมว, ทรายแมว, อาหารแมว]` พร้อมวันที่เกิดแต่ละเหตุการณ์
@@ -106,6 +110,9 @@ labels เป็น `[0,1,1,1,1]` เพราะตั้งแต่วัน�
 
 Heatmap วาง Gaussian รอบเวลาจริง ให้ bin ใกล้เคียงยังมีเป้าหมายสูงบางส่วน
 จึงไม่บังคับให้เวลาคลาดเพียงเล็กน้อยกลายเป็น class ที่ผิดทั้งหมด
+config ใหม่ใช้ `heatmap_density_units: days` เพื่อให้ความสูงเป็น density ต่อวัน
+ตาม Eq. (19) ส่วน config/checkpoint เก่าที่ไม่มี field นี้ยังใช้หน่วย horizon เดิม
+ค่า alpha, bins และ sigma ของแต่ละ dataset พร้อมที่มาอยู่ใน [PAPER_SETTINGS.md](PAPER_SETTINGS.md)
 
 ## 7. ฝึกสองงานร่วมกัน: losses.py
 
@@ -155,7 +162,8 @@ model(items, times, lengths, candidates)
 
 ## แนวทางทดลองต่อ
 
-เริ่มจาก `smoke.json` เพื่อเข้าใจ pipeline แล้วใช้ข้อมูลครบและ `pet.json`
+เริ่มจาก `smoke.json` เพื่อเข้าใจ pipeline แล้วใช้ข้อมูลครบกับ config ของหมวดนั้น:
+`pet.json`, `books.json` หรือ `beauty.json` ซึ่งระบุ data/output directory แยกกันและใช้ MPS
 ลองเปลี่ยน `predictor` โดยคง split/seed เดิมเพื่อเปรียบเทียบอย่างมีความหมาย
 ถ้าจะวัดผลหลาย seed ให้รัน 0–4 แยก output directory แล้วรวมค่าเฉลี่ยและส่วนเบี่ยงเบนมาตรฐาน
 พิจารณา raw ranking ควบคู่ reranked ranking และรายงาน cold positives ด้วย
