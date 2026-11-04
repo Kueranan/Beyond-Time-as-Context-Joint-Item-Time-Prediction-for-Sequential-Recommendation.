@@ -1,0 +1,63 @@
+{
+  "model": {
+    "item_dim": 172,
+    "time_dim": 100,
+    "heads": 2,
+    "layers": 2,
+    "cpm_layers": 2,
+    "cpm_heads": 4,
+    "dropout": 0.1,
+    "predictor": "heatmap",
+    "time_bins": 52,
+    "max_days": 365.0,
+    "sigma_days": 5.477225575051661,
+    "heatmap_density_units": "days",
+    "alpha": 0.1,
+    "beta": 0.01
+  },
+  "training": {
+    "epochs": 100,
+    "batch_size": 200,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "max_length": 32,
+    "negatives": 1,
+    "candidate_count": 100,
+    "patience": 20,
+    "seed": 0,
+    "device": "mps",
+    "threads": 2,
+    "max_train_batches": 0,
+    "max_eval_users": 0
+  },
+  "data": {
+    "dataset": "books",
+    "category": "Books",
+    "source": "data/raw/Books.csv.gz",
+    "source_sha256": "752e144c1d3804619711a6b21bd68a5505825064723bfcd5008ac26067abe04b",
+    "rows_scanned": 29139329,
+    "year": 2020,
+    "year_mode": "single",
+    "min_interactions": 15,
+    "max_users": 0,
+    "seed": 0,
+    "cluster_gap_days": 1.0,
+    "qualified_users_before_cluster_filter": 5897,
+    "users": 5460,
+    "items": 84501,
+    "interactions": 160719,
+    "train_examples": 136298,
+    "validation_targets": 9596,
+    "test_targets": 9365,
+    "held_out_item_not_in_train_fraction": 0.5171140762618005,
+    "catalog_policy": "transductive IDs from all retained splits; no held-out targets in training"
+  },
+  "data_hashes": {
+    "sequences.json": "6c12fd8e26897faa96b52b774dd761eb99b156ef5c884da32a4a631c6f6f936d",
+    "items.json": "47f192e05cca4d081d16e1883b3221420df218d7c3d38500fdf8cb100a27d25e"
+  },
+  "software": {
+    "torch": "2.15.0",
+    "numpy": "2.5.4"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "model": {
+    "item_dim": 172,
+    "time_dim": 100,
+    "heads": 2,
+    "layers": 2,
+    "cpm_layers": 2,
+    "cpm_heads": 4,
+    "dropout": 0.1,
+    "predictor": "heatmap",
+    "time_bins": 52,
+    "max_days": 365.0,
+    "sigma_days": 2.6457513110645907,
+    "heatmap_density_units": "days",
+    "alpha": 0.5,
+    "beta": 0.01
+  },
+  "training": {
+    "epochs": 100,
+    "batch_size": 200,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "max_length": 32,
+    "negatives": 1,
+    "candidate_count": 100,
+    "patience": 20,
+    "seed": 0,
+    "device": "mps",
+    "threads": 2,
+    "max_train_batches": 0,
+    "max_eval_users": 0
+  },
+  "data": {
+    "dataset": "beauty",
+    "category": "Beauty_and_Personal_Care",
+    "source": "data/raw/Beauty_and_Personal_Care.csv.gz",
+    "source_sha256": "dd89a914e8c71d811c49a7e8fbdfc251c08bffb461b9544275e94018cb17f741",
+    "rows_scanned": 23591312,
+    "year": 2020,
+    "year_mode": "single",
+    "min_interactions": 15,
+    "max_users": 0,
+    "seed": 0,
+    "cluster_gap_days": 1.0,
+    "qualified_users_before_cluster_filter": 3986,
+    "users": 3513,
+    "items": 37855,
+    "interactions": 108767,
+    "train_examples": 88027,
+    "validation_targets": 8966,
+    "test_targets": 8261,
+    "held_out_item_not_in_train_fraction": 0.33755151796598365,
+    "catalog_policy": "transductive IDs from all retained splits; no held-out targets in training"
+  },
+  "data_hashes": {
+    "sequences.json": "753f73f809b52a97b1a65c155fcb2ed2b957823ea79fb839176f14ec23edc471",
+    "items.json": "aa5b8cdd12ae411048b8c86fedde274f93641513135927c0ea887512bbfca66b"
+  },
+  "software": {
+    "torch": "2.15.0",
+    "numpy": "2.5.4"
+  }
+}

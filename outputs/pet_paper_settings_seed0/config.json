@@ -1,0 +1,63 @@
+{
+  "model": {
+    "item_dim": 172,
+    "time_dim": 100,
+    "heads": 2,
+    "layers": 2,
+    "cpm_layers": 2,
+    "cpm_heads": 4,
+    "dropout": 0.1,
+    "predictor": "heatmap",
+    "time_bins": 30,
+    "max_days": 365.0,
+    "sigma_days": 10.954451150103322,
+    "heatmap_density_units": "days",
+    "alpha": 0.5,
+    "beta": 0.01
+  },
+  "training": {
+    "epochs": 100,
+    "batch_size": 200,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "max_length": 32,
+    "negatives": 1,
+    "candidate_count": 100,
+    "patience": 20,
+    "seed": 0,
+    "device": "mps",
+    "threads": 2,
+    "max_train_batches": 0,
+    "max_eval_users": 0
+  },
+  "data": {
+    "dataset": "pet",
+    "category": "Pet_Supplies",
+    "source": "data/raw/Pet_Supplies.csv.gz",
+    "source_sha256": "cfc55406a1fbb507e4adfa18472e60a5de52fab3dd76f97fea25d30da1288003",
+    "rows_scanned": 16597408,
+    "year": 2021,
+    "year_mode": "single",
+    "min_interactions": 10,
+    "max_users": 0,
+    "seed": 0,
+    "cluster_gap_days": 1.0,
+    "qualified_users_before_cluster_filter": 6832,
+    "users": 5709,
+    "items": 35881,
+    "interactions": 89740,
+    "train_examples": 61506,
+    "validation_targets": 11413,
+    "test_targets": 11112,
+    "held_out_item_not_in_train_fraction": 0.32586015538290786,
+    "catalog_policy": "transductive IDs from all retained splits; no held-out targets in training"
+  },
+  "data_hashes": {
+    "sequences.json": "68172d865166c303bdbbc9deaaef9607139bf4300c6e59b50d82cfd368eb31b1",
+    "items.json": "d1cf013cd018605f86c6820a1396e3ad99129748ddcd358429fbc79c6a9908e0"
+  },
+  "software": {
+    "torch": "2.15.0",
+    "numpy": "2.5.4"
+  }
+}
